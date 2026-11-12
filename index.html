@@ -1,0 +1,1096 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="Material de apoio interativo de Robótica para o 1º ano do Ensino Médio: decisões SE… ENTÃO… SENÃO com micro:bit.">
+<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}</style>
+<title>Casa Inteligente</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Figtree:wght@400..700&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: planta de casa vista de cima. Uma tela por vez, cada uma com um quadro "Faça assim"; grades que se ajustam de 320px a monitores largos. */
+:root{
+  --bg:#EAF0F3; --paper:#F8FAFB; --ink:#13232E; --muted:#51656F; --line:#C5D2DA;
+  --accent:#0B7A6D; --accent-ink:#FFFFFF; --tint:#DDF1EE; --lamp:#F2A20C; --bad:#C62F2F; --badtint:#FBE4E4;
+  --note:#FFF0CC; --note-line:#C98A00;
+  --floor:#FFFFFF; --wall:#13232E; --grid:rgba(19,35,46,.06); --board:#0F2230; --ledoff:#24404F; --ledon:#FF4D4D;
+  --f-display:"Bricolage Grotesque","Trebuchet MS",system-ui,sans-serif;
+  --f-body:"Figtree",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0D1820; --paper:#14232E; --ink:#E7EFF3; --muted:#9BB0BC; --line:#2A3E4B;
+  --accent:#3CC9B5; --accent-ink:#06211D; --tint:#173A3A; --lamp:#FFB938; --bad:#FF7B7B; --badtint:#3A1E22;
+  --note:#3A2E10; --note-line:#FFB938;
+  --floor:#182A36; --wall:#8FB0C2; --grid:rgba(255,255,255,.05); --ledoff:#1B3341; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0D1820; --paper:#14232E; --ink:#E7EFF3; --muted:#9BB0BC; --line:#2A3E4B;
+  --accent:#3CC9B5; --accent-ink:#06211D; --tint:#173A3A; --lamp:#FFB938; --bad:#FF7B7B; --badtint:#3A1E22;
+  --note:#3A2E10; --note-line:#FFB938;
+  --floor:#182A36; --wall:#8FB0C2; --grid:rgba(255,255,255,.05); --ledoff:#1B3341; color-scheme:dark}
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{
+  background-color:var(--bg);
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:24px 24px;
+  color:var(--ink); font:16px/1.55 var(--f-body);
+  padding-block:0 120px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+}
+@media (min-width:900px){body{font-size:18px}}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.wrap{max-width:960px;margin:0 auto}
+h1,h2,h3{font-family:var(--f-display);line-height:1.15;margin:0;text-wrap:balance;letter-spacing:-.01em}
+h1{font-size:clamp(28px,6.5vw,48px);font-weight:800}
+h2{font-size:clamp(22px,4.5vw,32px);font-weight:700}
+h3{font-size:clamp(17px,2.6vw,20px);font-weight:700}
+p{margin:0}
+code,.mono{font-family:var(--f-mono)}
+.eyebrow{font:700 12px/1 var(--f-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+.muted{color:var(--muted)}
+.small{font-size:.875em}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+/* topo */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:var(--bg);padding:10px 0 8px;border-bottom:1px solid var(--line)}
+.top-row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.brand{font:800 18px var(--f-display);display:flex;align-items:center;gap:8px}
+.brand i{width:14px;height:14px;border:3px solid var(--ink);border-radius:3px;display:inline-block;position:relative}
+.brand i::after{content:"";position:absolute;left:-3px;top:2px;width:14px;height:3px;background:var(--lamp)}
+.where{font:700 12px var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.steps{display:flex;gap:5px;margin-top:8px}
+.steps button{flex:1;height:10px;border:0;border-radius:3px;background:var(--line);padding:0;position:relative}
+.steps button::after{content:"";position:absolute;inset:-12px 0}
+.steps button.done{background:var(--accent);opacity:.45}
+.steps button.now{background:var(--accent);opacity:1}
+.ribbon{display:block;width:100%;margin-top:8px;border:0;background:var(--note);color:var(--ink);border-radius:8px;padding:6px 10px;font-size:13px;text-align:left}
+.ribbon b{font-weight:800}
+
+/* telas */
+.screen{display:flex;flex-direction:column;gap:20px;padding-top:22px}
+.card{background:var(--paper);border:2px solid var(--ink);border-radius:12px;padding:16px}
+.card.soft{border-color:var(--line)}
+.stack{display:flex;flex-direction:column;gap:12px}
+.cols{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr))}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.btn{border:2px solid var(--ink);background:var(--accent);color:var(--accent-ink);border-radius:10px;padding:12px 18px;font-weight:700;min-height:48px}
+.btn.alt{background:var(--paper);color:var(--ink)}
+.btn:disabled{opacity:.45;cursor:default}
+.lead{font-size:1.08em;max-width:60ch}
+.list{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:8px}
+.list li{position:relative;padding-left:26px}
+.list li::before{content:"";position:absolute;left:0;top:7px;width:12px;height:12px;border:3px solid var(--accent);border-radius:50%}
+
+/* quadro "Faça assim" */
+.faca{background:var(--tint);border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+.faca>b{font:700 12px var(--f-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+.faca ol{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:8px;counter-reset:f}
+.faca li{position:relative;padding-left:38px;min-height:28px;counter-increment:f}
+.faca li::before{content:counter(f);position:absolute;left:0;top:1px;width:26px;height:26px;border-radius:50%;background:var(--accent);color:var(--accent-ink);font:800 14px var(--f-mono);display:grid;place-items:center}
+
+/* comunicado */
+.aviso{background:var(--note);border:2px solid var(--note-line);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:10px}
+.aviso .tag{font:800 12px var(--f-mono);letter-spacing:.14em;text-transform:uppercase}
+.aviso h2{font-size:clamp(20px,4vw,26px)}
+.aviso ul{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px}
+
+/* trilha */
+.trail{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr))}
+.stop{display:flex;gap:12px;align-items:center;text-align:left;border:2px solid var(--line);background:var(--paper);border-radius:12px;padding:12px 14px}
+.stop:hover{border-color:var(--accent)}
+.stop .n{flex:none;width:34px;height:34px;border-radius:50%;background:var(--ink);color:var(--bg);font:800 15px var(--f-mono);display:grid;place-items:center}
+.stop span.t{display:flex;flex-direction:column}
+.stop small{color:var(--muted);font-size:13px}
+
+/* casa */
+.house{width:100%;height:auto;display:block;background:var(--paper);border:2px solid var(--ink);border-radius:12px}
+.house .room{fill:var(--floor);stroke:var(--wall);stroke-width:4}
+.house .door{fill:var(--floor)}
+.house .lbl{font:700 10px var(--f-mono);letter-spacing:.14em;fill:var(--muted)}
+.house.a-corredor .r-corredor,.house.a-cozinha .r-cozinha,.house.a-entrada .r-entrada{fill:var(--tint)}
+.house .glow{fill:var(--lamp);opacity:0;transition:opacity .25s}
+.house .bulb{fill:var(--line);stroke:var(--wall);stroke-width:2.5;transition:fill .25s}
+.house.lamp-on .glow{opacity:.38}
+.house.lamp-on .bulb{fill:var(--lamp)}
+.house .bell{fill:var(--line);stroke:var(--wall);stroke-width:2.5;transition:fill .2s}
+.house .ring{fill:none;stroke:var(--lamp);stroke-width:3.5;stroke-linecap:round;opacity:0}
+.house .ding{font:800 13px var(--f-display);fill:var(--lamp);opacity:0}
+.house.bell-on .bell{fill:var(--lamp)}
+.house.bell-on .ring,.house.bell-on .ding{opacity:1}
+.house.bell-on .bellg{animation:shake .18s ease-in-out infinite alternate;transform-origin:80px 64px;transform-box:view-box}
+.house .fridge{fill:var(--paper);stroke:var(--wall);stroke-width:3}
+.house .fan{fill:var(--line);stroke:var(--wall);stroke-width:2}
+.house .fanhub{fill:var(--wall)}
+.house.motor-on .fan{fill:var(--accent)}
+.house.motor-on .fanspin{animation:spin .7s linear infinite;transform-box:fill-box;transform-origin:center}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes shake{from{transform:rotate(-9deg)}to{transform:rotate(9deg)}}
+
+/* animação de abertura (corredor) */
+.intro{width:100%;height:auto;display:block;background:var(--paper);border:2px solid var(--ink);border-radius:12px}
+.intro .room{fill:var(--floor);stroke:var(--wall);stroke-width:4}
+.intro .zone{fill:var(--accent);opacity:.16}
+.intro .sensor{fill:var(--ink)}
+.intro .glow{fill:var(--lamp);opacity:0;animation:glowOn 8s linear infinite}
+.intro .bulb{fill:var(--line);stroke:var(--wall);stroke-width:2.5;animation:bulbOn 8s linear infinite}
+.intro .person{animation:walk 8s linear infinite}
+.intro .pf{fill:var(--ink)}
+.intro .t-no{font:800 13px var(--f-mono);fill:var(--muted);animation:showNo 8s linear infinite}
+.intro .t-yes{font:800 13px var(--f-mono);fill:var(--accent);opacity:0;animation:showYes 8s linear infinite}
+.intro .lbl{font:700 9px var(--f-mono);letter-spacing:.14em;fill:var(--muted)}
+@keyframes walk{0%{transform:translateX(0)}100%{transform:translateX(290px)}}
+@keyframes glowOn{0%,28%{opacity:0}31%,67%{opacity:.4}70%,100%{opacity:0}}
+@keyframes bulbOn{0%,28%{fill:var(--line)}31%,67%{fill:var(--lamp)}70%,100%{fill:var(--line)}}
+@keyframes showNo{0%,28%{opacity:1}30%,68%{opacity:0}70%,100%{opacity:1}}
+@keyframes showYes{0%,28%{opacity:0}30%,68%{opacity:1}70%,100%{opacity:0}}
+
+/* micro:bit */
+.mb{background:var(--board);border-radius:14px;padding:12px 14px 10px;width:150px;flex:none;border:2px solid var(--ink)}
+.mb-leds{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.mb-leds i{aspect-ratio:1;border-radius:3px;background:var(--ledoff);transition:background .15s,box-shadow .15s}
+.mb-leds i.on{background:var(--ledon);box-shadow:0 0 8px var(--ledon)}
+.mb-btns{display:flex;justify-content:space-between;margin-top:10px}
+.mb-btns i{font:700 11px var(--f-mono);font-style:normal;color:#C9D7DF;width:22px;height:22px;border-radius:50%;border:2px solid #4B6573;display:grid;place-items:center}
+.mb-btns i.press{background:var(--lamp);color:#13232E;border-color:var(--lamp)}
+
+/* máquina de decisão */
+.machine{display:grid;gap:18px;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));align-items:start}
+.nodes{display:flex;flex-direction:column;align-items:stretch;max-width:420px;width:100%;margin:0 auto}
+.node{border:2px solid var(--line);background:var(--paper);border-radius:12px;padding:10px 14px;display:flex;justify-content:space-between;gap:10px;align-items:center;transition:all .25s}
+.node b{font:800 13px var(--f-mono);letter-spacing:.06em}
+.node span{font-weight:700;text-align:right;overflow-wrap:anywhere}
+.node.on{border-color:var(--accent);background:var(--tint);transform:scale(1.03)}
+.arrow{width:3px;height:22px;margin:0 auto;background:var(--line);position:relative;transition:background .25s}
+.arrow::after{content:"";position:absolute;bottom:-3px;left:-5px;border:6.5px solid transparent;border-top:9px solid var(--line);border-bottom:0;transition:border-top-color .25s}
+.arrow.on{background:var(--accent)}
+.arrow.on::after{border-top-color:var(--accent)}
+.branches{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.branches .node{flex-direction:column;align-items:flex-start;gap:2px}
+.branches .node span{text-align:left}
+.branches .node.on.else{border-color:var(--bad);background:var(--badtint)}
+.bulbs{display:flex;align-items:center;gap:10px;justify-content:center;margin-top:12px;font-weight:700}
+.bulbs i{width:26px;height:26px;border-radius:50%;background:var(--line);border:3px solid var(--wall);transition:all .3s}
+.bulbs i.on{background:var(--lamp);box-shadow:0 0 22px 6px var(--lamp)}
+.caption{min-height:3.2em;font-weight:600}
+
+/* laboratório */
+.tabs{display:flex;gap:8px;flex-wrap:wrap}
+.tab{border:2px solid var(--ink);background:var(--paper);border-radius:999px;padding:8px 16px;font-weight:700;min-height:44px}
+.tab[aria-selected="true"]{background:var(--ink);color:var(--bg)}
+.lab{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));align-items:start}
+.lab-grid{display:flex;gap:14px;align-items:center}
+.lab-grid .readout{flex:1;min-width:0}
+.big{font:800 44px/1 var(--f-display);font-variant-numeric:tabular-nums}
+.big small{font-size:18px;font-weight:600;color:var(--muted);margin-left:4px}
+.rng{display:flex;gap:8px;align-items:center}
+.rng button{flex:none;width:48px;height:48px;border:2px solid var(--ink);background:var(--paper);border-radius:10px;font:800 22px var(--f-mono)}
+input[type=range]{flex:1;min-width:0;accent-color:var(--accent);height:40px;margin:0}
+.rule{display:flex;flex-direction:column;gap:8px}
+.rule .line{display:flex;gap:10px;align-items:baseline;padding:10px 12px;border:2px solid var(--line);border-radius:10px;background:var(--paper);transition:background .2s,border-color .2s}
+.rule .kw{font:800 13px var(--f-mono);letter-spacing:.06em;min-width:58px}
+.rule .line.hit{border-color:var(--accent);background:var(--tint)}
+.verdict{font:700 15px var(--f-mono);padding:10px 12px;border-radius:8px;background:var(--ink);color:var(--bg);overflow-wrap:anywhere}
+.turn{font-weight:600;padding:10px 12px;border-radius:10px;background:var(--note);border:2px solid var(--note-line)}
+.code{background:var(--board);color:#D9E6EC;border-radius:10px;padding:12px 0;font:500 13px/1.7 var(--f-mono);overflow-x:auto}
+.code span{display:block;padding:0 14px;white-space:pre;border-left:4px solid transparent}
+.code span.hit{background:rgba(60,201,181,.18);border-left-color:#3CC9B5}
+.toggle-btn{width:100%;border:2px solid var(--ink);background:var(--paper);border-radius:12px;min-height:64px;font:800 20px var(--f-display)}
+.toggle-btn[aria-pressed="true"]{background:var(--lamp);color:#13232E}
+
+/* jogo V ou F e missões */
+.expr{font:800 clamp(34px,10vw,56px)/1 var(--f-mono);text-align:center;padding:22px 8px;background:var(--board);color:#fff;border-radius:12px;overflow-wrap:anywhere}
+.vf-btns{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.vf-btns .btn{min-height:64px;font-size:clamp(14px,4vw,18px);padding:12px 6px;min-width:0}
+.vf-btns .btn.no{background:var(--paper);color:var(--ink)}
+.meter{height:12px;border-radius:6px;background:var(--line);overflow:hidden}
+.meter i{display:block;height:100%;background:var(--accent);transition:width .3s}
+.stats{display:flex;gap:16px;flex-wrap:wrap;font:700 13px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.stats b{color:var(--ink);font-size:1.25em}
+.slide{animation:slide .3s ease-out}
+@keyframes slide{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.pop{animation:pop .5s ease-out}
+@keyframes pop{0%{transform:scale(.9)}60%{transform:scale(1.04)}100%{transform:scale(1)}}
+.mission-tabs{display:flex;gap:8px;flex-wrap:wrap}
+.mission-tabs .tab{flex:1;min-width:100px;text-align:center;padding:8px 6px}
+.opgrp{display:flex;gap:8px}
+.opgrp button{flex:1;min-height:56px;border:2px solid var(--ink);background:var(--paper);border-radius:10px;font:800 28px var(--f-mono)}
+.opgrp button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.stepper{display:flex;gap:8px;align-items:stretch}
+.stepper button{width:56px;border:2px solid var(--ink);background:var(--paper);border-radius:10px;font:800 24px var(--f-mono)}
+.stepper input{flex:1;min-width:0;text-align:center;border:2px solid var(--ink);border-radius:10px;background:var(--paper);color:var(--ink);font:800 26px var(--f-mono);height:56px}
+.sentence{font:600 17px/1.6 var(--f-mono);background:var(--board);color:#D9E6EC;border-radius:10px;padding:12px 14px;overflow-wrap:anywhere}
+.sentence b{color:#FFB938}.sentence em{font-style:normal;color:#3CC9B5}
+.table-wrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:15px}
+th,td{padding:8px 10px;text-align:left;border-bottom:1px solid var(--line)}
+th{font:700 12px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+td.mark{font-weight:800}
+tr.ok td.mark{color:var(--accent)} tr.no td.mark{color:var(--bad)} tr.no{background:var(--badtint)}
+.msg{padding:12px 14px;border-radius:10px;font-weight:600}
+.msg.good{background:var(--tint);border:2px solid var(--accent)}
+.msg.warn{background:var(--badtint);border:2px solid var(--bad)}
+.msg.info{background:var(--note);border:2px solid var(--note-line)}
+
+/* conceito */
+details.def{border:2px solid var(--line);border-radius:12px;background:var(--paper)}
+details.def[open]{border-color:var(--accent)}
+details.def summary{cursor:pointer;list-style:none;display:flex;gap:10px;align-items:center;padding:12px 14px;font:700 clamp(17px,2.6vw,20px) var(--f-display);min-height:48px}
+details.def summary::-webkit-details-marker{display:none}
+details.def summary::after{content:"+";margin-left:auto;font:800 22px var(--f-mono);color:var(--accent)}
+details.def[open] summary::after{content:"−"}
+details.def summary .n{font:700 12px var(--f-mono);color:var(--muted)}
+details.def .body{padding:0 14px 14px;display:flex;flex-direction:column;gap:4px}
+.def .rig{font-size:.9em;color:var(--muted)}
+.def .ex{font:600 .9em var(--f-mono)}
+.use h3{margin-bottom:4px}
+.use .mono{font-size:.9em;font-weight:700;color:var(--accent)}
+
+/* quiz */
+.opt{display:flex;flex-direction:column;gap:6px;text-align:left;width:100%;border:2px solid var(--ink);background:var(--paper);border-radius:10px;padding:12px 14px;min-height:52px}
+.opt .top-line{display:flex;gap:10px}
+.opt .letter{font:800 15px var(--f-mono);flex:none;min-width:34px}
+.opt .why{font-size:.9em;color:var(--muted);padding-left:44px}
+.opt.right{border-color:var(--accent);background:var(--tint)}
+.opt.wrong{border-color:var(--bad);background:var(--badtint)}
+.opt.right .why{color:var(--ink)}
+.q-rule{font:600 15px/1.6 var(--f-mono);background:var(--board);color:#D9E6EC;border-radius:10px;padding:10px 14px;overflow-wrap:anywhere}
+.progress-q{font:700 12px var(--f-mono);letter-spacing:.1em;color:var(--muted);text-transform:uppercase}
+.how{background:var(--paper);border:2px dashed var(--accent);border-radius:12px;padding:12px 16px}
+.how ol{margin:6px 0 0;padding-left:20px;display:flex;flex-direction:column;gap:4px}
+
+/* família e lista */
+.fam{display:flex;flex-direction:column;gap:8px}
+.fam label{font:700 12px var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:2px}
+.fam input{width:100%;border:2px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);font:inherit;padding:10px 12px;min-height:44px}
+.fam input:focus{border-color:var(--accent)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips span{border:2px solid var(--line);border-radius:999px;padding:3px 12px;font-size:.9em;background:var(--paper)}
+.check{display:flex;flex-direction:column;gap:8px}
+.check label{display:flex;gap:12px;align-items:flex-start;padding:12px 14px;border:2px solid var(--line);border-radius:10px;background:var(--paper);cursor:pointer;min-height:48px}
+.check input{flex:none;width:22px;height:22px;margin-top:2px;accent-color:var(--accent)}
+.check label:has(input:checked){border-color:var(--accent);background:var(--tint)}
+.tiles{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr))}
+.tile{border:2px solid var(--line);background:var(--paper);border-radius:12px;padding:12px}
+.tile .big{font-size:32px}
+.tile span{font:700 12px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+
+/* certificado */
+.req{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.req li{display:flex;gap:10px;align-items:flex-start}
+.req .mk{flex:none;width:24px;font:800 16px var(--f-mono);color:var(--muted)}
+.req li.ok .mk{color:var(--accent)}
+#certImg{display:block;width:100%;height:auto;border-radius:10px;border:2px solid var(--ink);background:#fff;box-shadow:0 10px 30px rgba(0,0,0,.18)}
+.err{color:var(--bad);font-weight:600}
+@media print{
+  @page{size:A4 landscape;margin:8mm}
+  body{background:#fff!important;padding:0!important}
+  .top,.nav,.cert-hide{display:none!important}
+  #certImg{border:0;box-shadow:none;border-radius:0;width:100%}
+}
+
+/* navegação */
+.nav{position:fixed;left:0;right:0;bottom:0;z-index:9;background:var(--bg);border-top:2px solid var(--ink);
+  padding:10px max(16px,env(safe-area-inset-right,0px)) calc(10px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.nav .wrap{display:flex;gap:10px;align-items:center}
+.nav .btn{flex:1}
+.nav .pos{font:700 13px var(--f-mono);color:var(--muted);min-width:44px;text-align:center}
+
+@media (max-width:430px){.lab-grid{flex-direction:column;align-items:stretch}.mb{width:100%;max-width:220px;align-self:center}.big{font-size:38px}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap" id="app">
+  <header class="top">
+    <div class="top-row">
+      <div class="brand"><i></i>Casa Inteligente</div>
+      <div class="where" id="where">Comece aqui</div>
+    </div>
+    <div class="steps" id="steps" role="tablist" aria-label="Etapas"></div>
+    <button class="ribbon" id="ribbon"><b>Aviso:</b> atividades e tarefas valem nota do bimestre. Toque para ler.</button>
+  </header>
+
+  <main id="stage">
+
+    <!-- 0 COMECE AQUI -->
+    <section class="screen" data-title="Comece aqui" hidden>
+      <div class="stack">
+        <span class="eyebrow">Robótica · 1º ano</span>
+        <h1>Como a luz do corredor sabe que você passou?</h1>
+        <p class="lead">Ela não pensa: ela segue uma regra. Nesta página você aprende a escrever regras assim e faz uma casa (e um robô) decidir sozinha.</p>
+      </div>
+      <div id="intro"></div>
+      <p class="small muted" style="margin-top:-8px">Assista: a pessoa entra na zona do sensor, o sensor percebe e a lâmpada acende.</p>
+
+      <div class="aviso" id="aviso" tabindex="-1">
+        <span class="tag">Comunicado importante</span>
+        <h2>Atividades e tarefas valem nota do bimestre</h2>
+        <ul>
+          <li>Faça cada atividade e cada tarefa dentro do prazo.</li>
+          <li>Tarefa não feita é nota que você deixa de ganhar.</li>
+          <li>Confira se tudo que está pendente já foi entregue.</li>
+          <li>Ficou com dúvida? Fale com o professor antes do prazo, e não depois.</li>
+        </ul>
+      </div>
+
+      <div class="faca">
+        <b>Como usar esta página</b>
+        <ol>
+          <li>Em cada tela, leia primeiro o quadro verde “Faça assim”. Ele diz o que fazer.</li>
+          <li>Toque, arraste e teste à vontade. Nada aqui quebra e você pode repetir quantas vezes quiser.</li>
+          <li>Use o botão <b>Próximo</b> lá embaixo para avançar. As barrinhas no topo também levam a cada etapa.</li>
+        </ol>
+      </div>
+
+      <div class="stack">
+        <h2>Sua trilha</h2>
+        <div class="trail" id="trail"></div>
+      </div>
+
+      <div class="card">
+        <h3>Ao final você vai conseguir</h3>
+        <ul class="list" style="margin-top:10px">
+          <li>Escrever uma regra SE… ENTÃO… SENÃO.</li>
+          <li>Dizer se uma condição é verdadeira ou falsa.</li>
+          <li>Achar essas regras em aparelhos da sua casa.</li>
+          <li>Ganhar o seu certificado de aprendizagem, com 60% ou mais de acertos.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 1 ENTENDA -->
+    <section class="screen" data-title="Entenda" hidden>
+      <div class="stack">
+        <span class="eyebrow">Etapa 1 · Entenda</span>
+        <h2>Uma decisão tem três partes</h2>
+        <p class="lead"><b>SE</b> a condição for verdadeira, <b>ENTÃO</b> faz uma coisa. <b>SENÃO</b>, faz outra. É como o “se chover, levo guarda-chuva; senão, deixo em casa”.</p>
+      </div>
+      <div class="faca">
+        <b>Faça assim</b>
+        <ol>
+          <li>Arraste a barra para escolher a luz que o sensor mede.</li>
+          <li>Toque em <b>Ver a decisão acontecer</b> e acompanhe o caminho, passo a passo.</li>
+          <li>Mude o número e veja se o caminho muda.</li>
+        </ol>
+      </div>
+      <div class="card machine">
+        <div class="stack">
+          <span class="eyebrow">Regra</span>
+          <p class="mono" style="font-weight:700;font-size:1.05em">SE luz &lt; 50<br>ENTÃO acender a lâmpada<br>SENÃO apagar a lâmpada</p>
+          <span class="muted">Luz medida pelo sensor</span>
+          <div class="big" id="dmVal">30</div>
+          <input type="range" id="dmRange" min="0" max="100" value="30" aria-label="Luz medida pelo sensor">
+          <button class="btn" id="dmPlay">▶ Ver a decisão acontecer</button>
+          <p class="caption" id="dmCap" aria-live="polite">Toque no botão para começar.</p>
+        </div>
+        <div>
+          <div class="nodes">
+            <div class="node" id="dn1"><b>1 · SENSOR</b><span>mede a luz</span></div>
+            <div class="arrow" id="da1"></div>
+            <div class="node" id="dn2"><b>2 · VALOR</b><span id="dv2">30</span></div>
+            <div class="arrow" id="da2"></div>
+            <div class="node" id="dn3"><b>3 · CONDIÇÃO</b><span id="dv3">30 &lt; 50 ?</span></div>
+            <div class="arrow" id="da3"></div>
+            <div class="branches">
+              <div class="node then" id="dnt"><b>ENTÃO</b><span>acender</span></div>
+              <div class="node else" id="dne"><b>SENÃO</b><span>apagar</span></div>
+            </div>
+          </div>
+          <div class="bulbs"><i id="dBulb"></i><span id="dBulbT">Lâmpada apagada</span></div>
+        </div>
+      </div>
+
+      <div class="stack">
+        <h2>As palavras, em ordem</h2>
+        <p class="muted">Toque em cada uma para abrir. Estão na ordem certa: uma ajuda a entender a próxima.</p>
+        <details class="def"><summary><span class="n">1</span>Sensor</summary><div class="body"><span>A peça que mede algo do ambiente.</span><span class="rig">No micro:bit: luz, temperatura e botões.</span><span class="ex">Ex.: sensor de luz</span></div></details>
+        <details class="def"><summary><span class="n">2</span>Valor</summary><div class="body"><span>O número que o sensor entrega.</span><span class="rig">A luz vai de 0 (escuro) até 255 (muito claro).</span><span class="ex">Ex.: luz = 30</span></div></details>
+        <details class="def"><summary><span class="n">3</span>Comparação</summary><div class="body"><span>Colocar dois números lado a lado para ver como eles se relacionam.</span><span class="rig">&lt; menor que · &gt; maior que · = igual a</span><span class="ex">Ex.: 30 &lt; 50</span></div></details>
+        <details class="def"><summary><span class="n">4</span>Verdadeiro e falso</summary><div class="body"><span>As duas únicas respostas possíveis de uma comparação.</span><span class="rig">Verdadeiro: está certo. Falso: está errado.</span><span class="ex">Ex.: 30 &lt; 50 é verdadeiro. 60 &lt; 50 é falso.</span></div></details>
+        <details class="def"><summary><span class="n">5</span>Condição</summary><div class="body"><span>Uma comparação cuja resposta é verdadeiro ou falso. É o que vem depois do SE.</span><span class="ex">Ex.: luz &lt; 50</span></div></details>
+        <details class="def"><summary><span class="n">6</span>Ação</summary><div class="body"><span>O que o micro:bit faz como resposta.</span><span class="rig">Liga ou desliga uma saída, mostra um desenho, toca um som.</span><span class="ex">Ex.: acender a lâmpada</span></div></details>
+      </div>
+
+      <div class="stack">
+        <h2>Para que serve, na vida real</h2>
+        <div class="cols">
+          <div class="card soft use"><h3>Jogos</h3><p>Todo jogo decide o tempo todo.</p><p class="mono">SE vida = 0 ENTÃO fim de jogo</p></div>
+          <div class="card soft use"><h3>Celular</h3><p>Ele avisa antes de desligar.</p><p class="mono">SE bateria &lt; 20 ENTÃO mostrar aviso</p></div>
+          <div class="card soft use"><h3>Semáforo</h3><p>A cor depende de uma regra.</p><p class="mono">SE tempo acabou ENTÃO próxima cor</p></div>
+          <div class="card soft use"><h3>Pix e banco</h3><p>O app confere antes de pagar.</p><p class="mono">SE saldo ≥ valor ENTÃO aprova SENÃO recusa</p></div>
+        </div>
+      </div>
+      <div class="card soft"><b>Cuidado com o igual.</b> Em 50 &lt; 50 a resposta é <b>falso</b>: 50 não é menor que 50, é igual a 50. Os números da fronteira enganam muita gente. Por isso você vai treinar com eles.</div>
+    </section>
+
+    <!-- 2 LABORATÓRIO -->
+    <section class="screen" data-title="Laboratório" hidden>
+      <div class="stack">
+        <span class="eyebrow">Etapa 2 · Laboratório</span>
+        <h2>Mexa no sensor e veja a casa decidir</h2>
+      </div>
+      <div class="faca">
+        <b>Faça assim</b>
+        <ol>
+          <li>Escolha uma aba: Luz, Temperatura ou Botão A.</li>
+          <li>Arraste a barra (ou use os botões − e +) e olhe a casa e o micro:bit reagirem.</li>
+          <li>Ache o número em que tudo muda. O aviso amarelo vai te ajudar.</li>
+        </ol>
+      </div>
+      <div class="tabs" role="tablist" id="labTabs"></div>
+      <div class="lab">
+        <div id="house2"></div>
+        <div class="stack">
+          <div class="card lab-grid">
+            <div class="mb" aria-label="Tela do micro:bit"><div class="mb-leds" id="mbLeds"></div><div class="mb-btns"><i id="mbA">A</i><i>B</i></div></div>
+            <div class="readout stack" id="labControl"></div>
+          </div>
+          <div class="turn" id="labTurn" hidden></div>
+        </div>
+      </div>
+      <div class="lab">
+        <div class="stack">
+          <div class="rule" id="labRule"></div>
+          <div class="verdict" id="labVerdict"></div>
+        </div>
+        <div class="stack">
+          <span class="eyebrow">O código desta regra (MakeCode)</span>
+          <div class="code" id="labCode"></div>
+          <p class="small muted">MakeCode é o editor do micro:bit. A parte colorida é a que está rodando agora.</p>
+        </div>
+      </div>
+      <div class="card soft" id="labNote"></div>
+    </section>
+
+    <!-- 3 VERDADEIRO OU FALSO -->
+    <section class="screen" data-title="Jogo" hidden>
+      <div class="stack">
+        <span class="eyebrow">Etapa 3 · Jogo</span>
+        <h2>Verdadeiro ou falso?</h2>
+      </div>
+      <div class="faca">
+        <b>Faça assim</b>
+        <ol>
+          <li>Leia a comparação na tela escura.</li>
+          <li>Toque em <b>VERDADEIRO</b> ou <b>FALSO</b>.</li>
+          <li>Leia a explicação e siga para a próxima. São 10 rodadas.</li>
+        </ol>
+      </div>
+      <div id="vf" class="stack"></div>
+    </section>
+
+    <!-- 4 MISSÕES -->
+    <section class="screen" data-title="Missões" hidden>
+      <div class="stack">
+        <span class="eyebrow">Etapa 4 · Missões</span>
+        <h2>Monte a regra certa</h2>
+      </div>
+      <div class="faca">
+        <b>Faça assim</b>
+        <ol>
+          <li>Escolha uma missão e leia o que a regra precisa fazer.</li>
+          <li>Toque no sinal (&lt;, &gt; ou =) e digite o número.</li>
+          <li>Toque em <b>Testar regra</b>. Os ✔ e ✘ mostram onde acertou e onde errou.</li>
+          <li>Travou? Toque em <b>Quero uma dica</b>.</li>
+        </ol>
+      </div>
+      <div class="mission-tabs" id="mTabs"></div>
+      <div class="card stack" id="mBody"></div>
+    </section>
+
+    <!-- 5 QUIZ -->
+    <section class="screen" data-title="Questões" hidden>
+      <div class="stack">
+        <span class="eyebrow">Etapa 5 · Questões</span>
+        <h2>Cinco perguntas, da mais fácil à mais difícil</h2>
+      </div>
+      <div class="faca">
+        <b>Faça assim</b>
+        <ol>
+          <li>Leia a pergunta e toque na resposta que achar certa.</li>
+          <li>A tela mostra por que cada alternativa está certa ou errada.</li>
+          <li>Leia o quadro “Como resolver” e toque em próxima.</li>
+        </ol>
+      </div>
+      <div id="quiz" class="stack"></div>
+    </section>
+
+    <!-- 6 EM CASA -->
+    <section class="screen" data-title="Em casa" hidden>
+      <div class="stack">
+        <span class="eyebrow">Etapa 6 · Em casa</span>
+        <h2>Ache decisões escondidas na sua casa</h2>
+      </div>
+      <div class="faca">
+        <b>Faça assim</b>
+        <ol>
+          <li>Olhe em volta e escolha 3 aparelhos que decidem algo sozinhos.</li>
+          <li>Escreva a regra de cada um no formato SE… ENTÃO… SENÃO.</li>
+          <li>Toque em <b>Copiar minhas regras</b> e mostre para alguém da família ou para os amigos.</li>
+        </ol>
+      </div>
+      <div class="chips" aria-label="Ideias de aparelhos"><span>sensor de presença</span><span>geladeira</span><span>semáforo</span><span>portão automático</span><span>aviso de bateria fraca</span><span>ar-condicionado</span></div>
+      <div class="card fam" id="fam"></div>
+      <div class="row"><button class="btn" id="copiar">Copiar minhas regras</button></div>
+      <div class="msg good" id="copiaMsg" hidden></div>
+      <div class="card soft"><b>Pergunta para a família:</b> “Como este aparelho sabe a hora certa de ligar?” A resposta quase sempre é um sensor e uma regra.</div>
+
+      <div class="aviso">
+        <span class="tag">Antes de sair</span>
+        <h2>Sua lista de hoje</h2>
+        <p>Atividades e tarefas valem nota do bimestre. Marque o que você já fez.</p>
+        <div class="check" id="check"></div>
+        <p class="small" id="checkMsg" aria-live="polite"></p>
+      </div>
+
+      <div class="stack">
+        <h2>Seu progresso nesta página</h2>
+        <div class="tiles" id="tiles"></div>
+      </div>
+
+      <div class="card stack">
+        <h3>Quer rever?</h3>
+        <p>Um semáforo feito com SE… SENÃO no Scratch. Os blocos de decisão são parecidos com os do micro:bit.</p>
+        <a class="btn" style="text-decoration:none;text-align:center" href="https://www.youtube.com/watch?v=RvLoI360XB4" target="_blank" rel="noopener">Abrir o vídeo no YouTube</a>
+      </div>
+    </section>
+
+    <!-- 7 CERTIFICADO -->
+    <section class="screen" data-title="Certificado" hidden>
+      <div class="stack cert-hide">
+        <span class="eyebrow">Etapa 7 · Certificado</span>
+        <h2>Seu certificado de aprendizagem</h2>
+        <p class="lead">Quem chega a 60% ou mais de acertos, somando o jogo e as questões, ganha um certificado com o próprio nome para guardar, mostrar e compartilhar.</p>
+      </div>
+      <div class="card stack cert-hide" id="certStatus"></div>
+      <div class="stack cert-hide" id="certForm" hidden>
+        <div class="faca">
+          <b>Faça assim</b>
+          <ol>
+            <li>Escreva seu nome completo no campo abaixo.</li>
+            <li>Toque em <b>Gerar meu certificado</b>.</li>
+            <li>Salve a imagem: no celular, toque e segure nela e escolha “Salvar imagem”. No computador, clique com o botão direito. Ou tire um print da tela.</li>
+            <li>Mostre para a família e para os amigos e conte o que você aprendeu.</li>
+          </ol>
+        </div>
+        <div class="card fam">
+          <div><label for="certName">Seu nome completo</label><input id="certName" maxlength="60" autocomplete="name" placeholder="ex.: Maria Eduarda da Silva"></div>
+          <p class="err small" id="certErr" role="alert" hidden></p>
+          <div class="row"><button class="btn" id="certGo">Gerar meu certificado</button></div>
+        </div>
+      </div>
+      <div class="stack" id="certOut" hidden>
+        <img id="certImg" alt="Certificado de aprendizagem">
+        <div class="msg good cert-hide"><b>Pronto!</b> Salve a imagem (toque e segure no celular, botão direito no computador) ou tire um print. Para ter em PDF, abra a imagem salva e use Imprimir, depois Salvar como PDF.</div>
+        <div class="row cert-hide"><button class="btn" id="certShare">Copiar mensagem para compartilhar</button></div>
+        <div class="msg good cert-hide" id="certShareMsg" hidden></div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<nav class="nav"><div class="wrap">
+  <button class="btn alt" id="prev">Voltar</button>
+  <span class="pos mono" id="pos">1/8</span>
+  <button class="btn" id="next">Próximo</button>
+</div></nav>
+
+<script>
+(function(){
+const $=(s,r)=>(r||document).querySelector(s), $$=(s,r)=>[...(r||document).querySelectorAll(s)];
+const CMP={'<':(a,b)=>a<b,'>':(a,b)=>a>b,'=':(a,b)=>a===b};
+const state={missions:[false,false,false],quiz:{done:false,score:0,total:5},vf:{best:null,done:false}};
+let store=null; try{store=window.localStorage}catch(e){}
+const sget=k=>{try{return store?JSON.parse(store.getItem(k)):null}catch(e){return null}};
+const sset=(k,v)=>{try{store&&store.setItem(k,JSON.stringify(v))}catch(e){}};
+
+/* ---------- abertura animada ---------- */
+$('#intro').innerHTML=`<svg class="intro" viewBox="0 0 360 150" role="img" aria-label="Animação: uma pessoa anda no corredor, o sensor percebe e a lâmpada acende">
+  <rect class="room" x="10" y="10" width="340" height="130"/>
+  <polygon class="zone" points="180,22 110,136 250,136"/>
+  <rect class="sensor" x="168" y="12" width="24" height="10" rx="3"/>
+  <circle class="glow" cx="180" cy="64" r="52"/>
+  <circle class="bulb" cx="180" cy="64" r="11"/>
+  <text class="lbl" x="20" y="30">SENSOR PERGUNTA: ALGUÉM NA ZONA?</text>
+  <text class="t-no" x="20" y="50">NÃO</text>
+  <text class="t-yes" x="20" y="50">SIM → ACENDE</text>
+  <g transform="translate(40,112)"><g class="person"><circle class="pf" cx="0" cy="-17" r="7"/><rect class="pf" x="-7" y="-8" width="14" height="24" rx="6"/></g></g>
+</svg>`;
+
+/* ---------- casa (planta) ---------- */
+function houseSVG(){
+  return `<svg class="house" viewBox="0 0 360 232" role="img" aria-label="Planta de uma casa vista de cima, com entrada, cozinha e corredor">
+  <rect class="room r-entrada" x="10" y="10" width="140" height="130"/>
+  <rect class="room r-cozinha" x="150" y="10" width="200" height="130"/>
+  <rect class="room r-corredor" x="10" y="140" width="340" height="82"/>
+  <rect class="door" x="58" y="136" width="40" height="8"/>
+  <rect class="door" x="228" y="136" width="40" height="8"/>
+  <rect class="door" x="146" y="52" width="8" height="40"/>
+  <text class="lbl" x="20" y="29">ENTRADA</text><text class="lbl" x="160" y="29">COZINHA</text><text class="lbl" x="20" y="160">CORREDOR</text>
+  <circle class="glow" cx="180" cy="188" r="46"/>
+  <circle class="bulb" cx="180" cy="188" r="11"/>
+  <g class="bellg"><path class="bell" d="M65 96 Q65 68 80 64 Q95 68 95 96 Z"/><rect class="bell" x="61" y="96" width="38" height="6" rx="3"/><circle class="bell" cx="80" cy="108" r="4"/></g>
+  <path class="ring" d="M52 74 Q45 86 52 98"/><path class="ring" d="M108 74 Q115 86 108 98"/>
+  <text class="ding" x="80" y="130" text-anchor="middle">DING!</text>
+  <rect class="fridge" x="288" y="34" width="46" height="92" rx="5"/>
+  <line x1="288" y1="66" x2="334" y2="66" stroke="var(--wall)" stroke-width="2.5"/>
+  <circle cx="311" cy="98" r="15" fill="var(--paper)" stroke="var(--wall)" stroke-width="2"/>
+  <g class="fanspin"><ellipse class="fan" cx="311" cy="98" rx="12" ry="3.6"/><ellipse class="fan" cx="311" cy="98" rx="3.6" ry="12"/></g>
+  <circle class="fanhub" cx="311" cy="98" r="2.6"/>
+</svg>`;
+}
+function setHouse(el,s){
+  const svg=$('svg',el); if(!svg) return;
+  svg.classList.toggle('lamp-on',!!s.lamp);
+  svg.classList.toggle('motor-on',!!s.motor);
+  svg.classList.toggle('bell-on',!!s.bell);
+  ['corredor','cozinha','entrada'].forEach(r=>svg.classList.toggle('a-'+r,s.active===r));
+}
+const h2=$('#house2'); h2.innerHTML=houseSVG();
+
+/* ---------- máquina de decisão ---------- */
+let dmT=[];
+const dmIds=['dn1','da1','dn2','da2','dn3','da3','dnt','dne'];
+function dmReset(){dmT.forEach(clearTimeout);dmT=[];dmIds.forEach(i=>$('#'+i).classList.remove('on'));$('#dBulb').classList.remove('on');$('#dBulbT').textContent='Lâmpada apagada'}
+function dmVals(){const v=+$('#dmRange').value;$('#dmVal').textContent=v;$('#dv2').textContent=v;$('#dv3').textContent=`${v} < 50 ?`;return v}
+$('#dmRange').addEventListener('input',()=>{dmVals();dmReset();$('#dmCap').textContent='Número mudou. Toque em ▶ para ver a decisão.'});
+$('#dmPlay').addEventListener('click',()=>{
+  const v=dmVals(), ok=v<50; dmReset();
+  const step=(ms,ids,cap,fn)=>dmT.push(setTimeout(()=>{ids.forEach(i=>$('#'+i).classList.add('on'));$('#dmCap').textContent=cap;fn&&fn()},ms));
+  $('#dmCap').textContent='Começando…';
+  step(300,['dn1'],'1. O sensor mede a luz do ambiente.');
+  step(1700,['da1','dn2'],`2. Ele entrega o valor: ${v}.`);
+  step(3100,['da2','dn3'],`3. A regra compara: ${v} < 50? A resposta é ${ok?'VERDADEIRO':'FALSO'}.`);
+  step(4600,['da3',ok?'dnt':'dne'],ok?'4. Condição verdadeira: roda o ENTÃO e a lâmpada acende.':'4. Condição falsa: roda o SENÃO e a lâmpada apaga.',()=>{
+    $('#dBulb').classList.toggle('on',ok);$('#dBulbT').textContent=ok?'Lâmpada acesa':'Lâmpada apagada'});
+});
+
+/* ---------- laboratório ---------- */
+const ICON_YES=[0,0,0,0,0, 0,0,0,0,1, 0,0,0,1,0, 1,0,1,0,0, 0,1,0,0,0];
+const leds=$('#mbLeds'); leds.innerHTML='<i></i>'.repeat(25);
+function showLeds(p){$$('i',leds).forEach((d,k)=>d.classList.toggle('on',!!(p&&p[k])))}
+const SC=[
+ {id:'luz',tab:'Luz',room:'corredor',kind:'num',min:0,max:255,val:30,unit:'',name:'luz',cmp:'<',lim:50,
+  expr:'input.lightLevel()',then:'acender a lâmpada',els:'apagar a lâmpada',out:'lamp',pin:'P0',
+  note:'O micro:bit mede a luz usando os próprios LEDs como sensor: 0 é escuro e 255 é muito claro. A lâmpada de verdade seria ligada pelo pino P0, por meio de um relé ou de um LED com resistor.'},
+ {id:'temp',tab:'Temperatura',room:'cozinha',kind:'num',min:0,max:40,val:8,unit:' °C',name:'temperatura',cmp:'>',lim:5,
+  expr:'input.temperature()',then:'ligar o motor da geladeira',els:'desligar o motor',out:'motor',pin:'P1',
+  note:'O micro:bit mede a temperatura do próprio chip, então o valor é aproximado. Uma geladeira de verdade usa um sensor dentro dela; aqui o micro:bit é só o modelo.'},
+ {id:'botao',tab:'Botão A',room:'entrada',kind:'bool',val:false,name:'botão A apertado',
+  expr:'input.buttonIsPressed(Button.A)',then:'tocar a campainha',els:'silenciar a campainha',out:'bell',pin:'P2',
+  note:'Aqui não há número para comparar. A própria condição já é verdadeira (botão apertado) ou falsa (botão solto).'}
+];
+let cur_sc=0;
+const cond=s=>s.kind==='bool'?s.val:(s.cmp==='<'?s.val<s.lim:s.val>s.lim);
+function codeLines(s){
+  const c=s.kind==='bool'?s.expr:`${s.expr} ${s.cmp} ${s.lim}`;
+  return [['basic.forever(function () {',''],[`    if (${c}) {`,''],
+   [`        pins.digitalWritePin(DigitalPin.${s.pin}, 1)`,'t'],['        basic.showIcon(IconNames.Yes)','t'],
+   ['    } else {',''],[`        pins.digitalWritePin(DigitalPin.${s.pin}, 0)`,'e'],['        basic.clearScreen()','e'],['    }',''],['})','']];
+}
+function drawLab(){
+  const s=SC[cur_sc], ok=cond(s);
+  setHouse(h2,{lamp:s.out==='lamp'&&ok,motor:s.out==='motor'&&ok,bell:s.out==='bell'&&ok,active:s.room});
+  showLeds(ok?ICON_YES:null);
+  $('#mbA').classList.toggle('press',s.kind==='bool'&&s.val);
+  const condTxt=s.kind==='bool'?s.name:`${s.name} ${s.cmp} ${s.lim}`;
+  $('#labRule').innerHTML=
+    `<div class="line ${ok?'hit':''}"><span class="kw">SE</span><span class="mono" style="font-weight:700">${condTxt}</span></div>`+
+    `<div class="line ${ok?'hit':''}"><span class="kw">ENTÃO</span><span>${s.then}</span></div>`+
+    `<div class="line ${ok?'':'hit'}"><span class="kw">SENÃO</span><span>${s.els}</span></div>`;
+  $('#labVerdict').textContent= s.kind==='bool'
+    ? `${s.name}? ${s.val?'sim':'não'}  →  ${ok?'VERDADEIRO':'FALSO'}`
+    : `${s.val} ${s.cmp} ${s.lim}  →  ${ok?'VERDADEIRO':'FALSO'}`;
+  $('#labCode').innerHTML=codeLines(s).map(l=>{
+    const hit=(ok&&l[1]==='t')||(!ok&&l[1]==='e');
+    return `<span class="${hit?'hit':''}">${l[0].replace(/&/g,'&amp;').replace(/</g,'&lt;')}</span>`}).join('');
+  $('#labNote').textContent=s.note;
+}
+function turnMsg(txt){const t=$('#labTurn');t.hidden=!txt;t.textContent=txt||''}
+function buildControl(){
+  const s=SC[cur_sc], box=$('#labControl'); turnMsg('');
+  s.prev=null;
+  if(s.kind==='bool'){
+    box.innerHTML=`<span class="muted">Toque para apertar e soltar o botão A</span><button class="toggle-btn" id="btnA" aria-pressed="${s.val}">${s.val?'Apertado':'Solto'}</button>`;
+    $('#btnA').addEventListener('click',e=>{s.val=!s.val;e.currentTarget.setAttribute('aria-pressed',s.val);e.currentTarget.textContent=s.val?'Apertado':'Solto';turnMsg(s.val?'Botão apertado: condição verdadeira, roda o ENTÃO.':'Botão solto: condição falsa, roda o SENÃO.');drawLab()});
+  }else{
+    box.innerHTML=`<span class="muted">Valor do sensor de ${s.name}</span><div class="big"><span id="labVal">${s.val}</span><small>${s.unit.trim()}</small></div>
+      <div class="rng"><button id="labM" aria-label="Diminuir 1">−</button><input type="range" id="labRange" min="${s.min}" max="${s.max}" step="1" value="${s.val}" aria-label="Valor de ${s.name}"><button id="labP" aria-label="Aumentar 1">+</button></div>
+      <span class="muted small">Procure o momento em que a casa muda.</span>`;
+    const set=v=>{
+      v=Math.max(s.min,Math.min(s.max,v)); const was=cond(s), old=s.val; s.val=v;
+      $('#labRange').value=v;$('#labVal').textContent=v;
+      const now=cond(s);
+      if(was!==now){turnMsg(Math.abs(v-old)===1?`Achou! A virada acontece entre ${Math.min(v,old)} e ${Math.max(v,old)}. Com ${s.cmp==='<'?(now?v:old):(now?v:old)} a condição é verdadeira.`:`A virada está entre ${Math.min(v,old)} e ${Math.max(v,old)}. Chegue mais perto, de 1 em 1, com os botões − e +.`)}
+      drawLab()};
+    $('#labRange').addEventListener('input',e=>set(+e.target.value));
+    $('#labM').addEventListener('click',()=>set(s.val-1));
+    $('#labP').addEventListener('click',()=>set(s.val+1));
+  }
+}
+function buildTabs(){
+  const t=$('#labTabs'); t.innerHTML='';
+  SC.forEach((s,i)=>{const b=document.createElement('button');b.className='tab';b.textContent=s.tab;b.setAttribute('role','tab');b.setAttribute('aria-selected',i===cur_sc);
+    b.addEventListener('click',()=>{cur_sc=i;buildTabs();buildControl();drawLab()});t.appendChild(b)});
+}
+buildTabs();buildControl();drawLab();
+
+/* ---------- jogo verdadeiro ou falso ---------- */
+const VF=[[30,'<',50],[80,'<',50],[50,'<',50],[7,'>',5],[5,'>',5],[20,'=',20],[19,'=',20],[255,'>',100],[0,'<',1],[35,'>',30]];
+function why(a,op,b){
+  const r=CMP[op](a,b);
+  if(op==='<') return r?`${a} é menor que ${b}.`:(a===b?`${a} é igual a ${b}, e igual não é menor.`:`${a} é maior que ${b}, não menor.`);
+  if(op==='>') return r?`${a} é maior que ${b}.`:(a===b?`${a} é igual a ${b}, e igual não é maior.`:`${a} é menor que ${b}, não maior.`);
+  return r?`${a} e ${b} são o mesmo número.`:`${a} e ${b} são números diferentes.`;
+}
+let vi=0,vscore=0,vstreak=0,vbest=0;
+function drawVF(){
+  const box=$('#vf');
+  if(vi>=VF.length){
+    state.vf.done=true; state.vf.best=vscore;
+    box.innerHTML=`<div class="card stack pop"><h3>Você acertou ${vscore} de ${VF.length}</h3><div class="big">${vscore*10}%</div><p class="muted">Maior sequência de acertos: ${vbest}.</p>
+      <p>${vscore>=9?'Mandou bem! Pode ir para as missões.':'Errou alguma? Olhe de novo o quadro “Cuidado com o igual” e jogue outra vez.'}</p>${certHint()}<button class="btn alt" id="vfAgain">Jogar de novo</button></div>`;
+    bindCert(box);
+    $('#vfAgain').addEventListener('click',()=>{vi=0;vscore=0;vstreak=0;vbest=0;state.vf.done=false;state.vf.best=null;drawVF()});return;
+  }
+  const [a,op,b]=VF[vi];
+  box.innerHTML=`<div class="stats"><span>Rodada <b>${vi+1}</b>/${VF.length}</span><span>Acertos <b>${vscore}</b></span><span>Sequência <b>${vstreak}</b></span></div>
+    <div class="meter" aria-hidden="true"><i style="width:${vi/VF.length*100}%"></i></div>
+    <div class="expr slide">${a} ${op} ${b}</div>
+    <div class="vf-btns"><button class="btn" data-a="1">VERDADEIRO</button><button class="btn no" data-a="0">FALSO</button></div>
+    <div id="vfOut" class="stack"></div>`;
+  $$('.vf-btns .btn',box).forEach(x=>x.addEventListener('click',()=>{
+    const r=CMP[op](a,b), said=x.dataset.a==='1', hit=r===said;
+    if(hit){vscore++;vstreak++;vbest=Math.max(vbest,vstreak)}else vstreak=0;
+    $$('.vf-btns .btn',box).forEach(y=>y.disabled=true);
+    $('#vfOut').innerHTML=`<div class="msg ${hit?'good':'warn'} pop">${hit?'Certo!':'Quase.'} ${a} ${op} ${b} é <b>${r?'VERDADEIRO':'FALSO'}</b>. ${why(a,op,b)}</div><button class="btn" id="vfNext">${vi===VF.length-1?'Ver resultado':'Próxima rodada'}</button>`;
+    $('#vfNext').addEventListener('click',()=>{vi++;drawVF()});
+  }));
+}
+drawVF();
+
+/* ---------- missões ---------- */
+const MS=[
+ {tab:'Corredor',title:'Lâmpada do corredor',goal:'A lâmpada deve acender só no escuro: quando a luz for <b>menor que 50</b>.',
+  name:'luz',expr:'input.lightLevel()',unit:'',tests:[10,49,50,120],want:v=>v<50,yes:'acender',no:'apagar',op:'=',val:100,hint:0,
+  hints:['Procure na frase a palavra que compara. Aqui é “menor que”.','“Menor que” combina com o sinal <.','O número está na própria frase: 50. Monte: luz < 50.']},
+ {tab:'Geladeira',title:'Motor da geladeira',goal:'O motor deve ligar quando a temperatura <b>passar de 5 °C</b>.',
+  name:'temperatura',expr:'input.temperature()',unit:' °C',tests:[3,5,6,12],want:v=>v>5,yes:'ligar motor',no:'desligar motor',op:'=',val:0,hint:0,
+  hints:['“Passar de 5” quer dizer ficar acima de 5.','“Acima de” combina com o sinal >.','Monte: temperatura > 5. Note que com 5 °C exatos o motor não liga.']},
+ {tab:'Robô',title:'Aviso de bateria',goal:'O robô deve avisar quando a bateria estiver <b>abaixo de 20 %</b>.',
+  name:'bateria',expr:'bateria',unit:' %',tests:[5,19,20,80],want:v=>v<20,yes:'mostrar aviso',no:'sem aviso',op:'=',val:50,hint:0,
+  hints:['“Abaixo de 20” quer dizer menor que 20.','“Menor que” combina com o sinal <.','Monte: bateria < 20. Com 20 % exatos o aviso não aparece.']}
+];
+let curM=0;
+function buildMTabs(){
+  const t=$('#mTabs'); t.innerHTML='';
+  MS.forEach((m,i)=>{const b=document.createElement('button');b.className='tab';b.setAttribute('aria-selected',i===curM);
+    b.textContent=(state.missions[i]?'✔ ':'')+`Missão ${i+1}`;b.addEventListener('click',()=>{curM=i;buildMTabs();buildM()});t.appendChild(b)});
+}
+function buildM(){
+  const m=MS[curM], b=$('#mBody');
+  b.innerHTML=`<h3>Missão ${curM+1} · ${m.title}</h3><p>${m.goal}</p>
+   <div><span class="muted small">1. Escolha o sinal</span>
+    <div class="opgrp" id="ops">${['<','>','='].map(o=>`<button data-op="${o}" aria-pressed="${m.op===o}" aria-label="${o==='<'?'menor que':o==='>'?'maior que':'igual a'}">${o}</button>`).join('')}</div></div>
+   <div><span class="muted small">2. Digite o número</span>
+    <div class="stepper"><button id="mMinus" aria-label="Diminuir 1">−</button><input id="mVal" type="number" inputmode="numeric" step="1" value="${m.val}" aria-label="Número da condição"><button id="mPlus" aria-label="Aumentar 1">+</button></div></div>
+   <div class="sentence" id="mSent"></div>
+   <div class="row"><button class="btn" id="mTest">3. Testar regra</button><button class="btn alt" id="mHint">Quero uma dica</button></div>
+   <div id="mHintOut" class="msg info" hidden></div>
+   <div id="mOut" class="stack"></div>`;
+  const sent=()=>{ $('#mSent').innerHTML=`<b>SE</b> ${m.name} <em>${m.op}</em> <em>${m.val}</em><br><b>ENTÃO</b> ${m.yes}<br><b>SENÃO</b> ${m.no}`};
+  sent();
+  $$('#ops button').forEach(x=>x.addEventListener('click',()=>{m.op=x.dataset.op;$$('#ops button').forEach(y=>y.setAttribute('aria-pressed',y===x));sent()}));
+  const inp=$('#mVal');
+  const setV=v=>{m.val=Number.isFinite(v)?v:0;inp.value=m.val;sent()};
+  $('#mMinus').addEventListener('click',()=>setV(m.val-1));
+  $('#mPlus').addEventListener('click',()=>setV(m.val+1));
+  inp.addEventListener('input',()=>{const v=parseInt(inp.value,10);m.val=Number.isFinite(v)?v:0;sent()});
+  $('#mHint').addEventListener('click',()=>{
+    const out=$('#mHintOut'); out.hidden=false;
+    const n=Math.min(m.hint+1,m.hints.length); m.hint=n;
+    out.innerHTML=`<b>Dica ${n} de ${m.hints.length}:</b> ${m.hints[n-1]}`;
+    if(n===m.hints.length) $('#mHint').disabled=true;
+  });
+  $('#mTest').addEventListener('click',()=>{
+    const rows=m.tests.map(v=>{const want=m.want(v),got=CMP[m.op](v,m.val);return {v,want,got,ok:want===got}});
+    const all=rows.every(r=>r.ok);
+    if(all){state.missions[curM]=true;buildMTabs();}
+    $('#mOut').innerHTML=
+      `<div class="table-wrap"><table><thead><tr><th>${m.name}</th><th>Deveria</th><th>Sua regra</th><th></th></tr></thead><tbody>`+
+      rows.map(r=>`<tr class="${r.ok?'ok':'no'}"><td class="mono">${r.v}${m.unit}</td><td>${r.want?m.yes:m.no}</td><td>${r.got?m.yes:m.no}</td><td class="mark">${r.ok?'✔':'✘'}</td></tr>`).join('')+`</tbody></table></div>`+
+      (all?`<div class="msg good pop">Missão cumprida! Em código fica: <code>if (${m.expr} ${m.op} ${m.val})</code>${curM<2?' Vá para a próxima missão.':''}</div>`
+          :`<div class="msg warn">Ainda não. Olhe as linhas com ✘: a sua regra fez diferente do que a missão pede. Mude o sinal ou o número e teste de novo.</div>`);
+  });
+}
+buildMTabs();buildM();
+
+/* ---------- questões ---------- */
+const Q=[
+ {t:'Em SE… ENTÃO… SENÃO, qual parte roda quando a condição é falsa?',ok:2,how:['Condição falsa significa que a resposta da pergunta foi “não”.','Quando é “não”, o micro:bit vai para o outro caminho.','Esse caminho é o SENÃO.'],o:[
+  ['SE','O SE só faz a pergunta (a condição). Ele não é uma ação.'],
+  ['ENTÃO','O ENTÃO roda quando a condição é verdadeira, não quando é falsa.'],
+  ['SENÃO','Certo: o SENÃO é o caminho da condição falsa.'],
+  ['Nenhuma delas','Sempre roda uma das duas: ENTÃO ou SENÃO.']]},
+ {t:'Luz = 30. O que acontece?',rule:'SE luz < 50 ENTÃO acender SENÃO apagar',ok:0,how:['Troque “luz” por 30: fica 30 < 50.','30 é menor que 50? Sim. A condição é verdadeira.','Verdadeiro roda o ENTÃO: acender.'],o:[
+  ['A lâmpada acende','Certo: 30 < 50 é verdadeiro, então roda o ENTÃO.'],
+  ['A lâmpada apaga','Apagar é o SENÃO, que só roda se a condição for falsa. Aqui 30 < 50 é verdadeiro.'],
+  ['Nada acontece','Sempre roda uma das duas partes.'],
+  ['Depende da hora','A regra só olha o valor da luz, não a hora.']]},
+ {t:'Agora a luz = 50. O que acontece?',rule:'SE luz < 50 ENTÃO acender SENÃO apagar',ok:1,how:['Troque “luz” por 50: fica 50 < 50.','50 é menor que 50? Não: 50 é igual a 50. A condição é falsa.','Falso roda o SENÃO: apagar.'],o:[
+  ['A lâmpada acende','50 < 50 é falso: 50 não é menor que 50, é igual a 50.'],
+  ['A lâmpada apaga','Certo: 50 < 50 é falso, então roda o SENÃO.'],
+  ['A lâmpada pisca','Essa regra não tem pisca. Só tem acender e apagar.'],
+  ['O micro:bit dá erro','Não dá erro. A comparação apenas resulta em falso.']]},
+ {t:'Um alarme deve tocar quando a temperatura da sala passar de 30 °C. Qual condição usar?',ok:3,how:['“Passar de 30” quer dizer ficar acima de 30.','“Acima de” combina com o sinal >.','Condição: temperatura > 30. Teste: 31 > 30 é verdadeiro (toca) e 30 > 30 é falso (não toca).'],o:[
+  ['temperatura < 30','O sinal < é “menor que”: o alarme tocaria no frio.'],
+  ['temperatura = 30','Só seria verdadeiro em exatamente 30 °C. Com 35 °C não tocaria.'],
+  ['temperatura > 0','Quase sempre verdadeiro: tocaria até com 10 °C.'],
+  ['temperatura > 30','Certo: “passar de 30” é ficar maior que 30.']]},
+ {t:'Quantos desses valores de bateria fazem o aviso aparecer: 5, 19, 20 e 35?',rule:'SE bateria < 20 ENTÃO mostrar aviso',ok:1,how:['5 < 20? Sim: aviso.','19 < 20? Sim: aviso.','20 < 20? Não, é igual: sem aviso. 35 < 20? Não: sem aviso.','Total: 2 valores.'],o:[
+  ['1','Só um? 5 < 20 e 19 < 20 são verdadeiros. Já são dois.'],
+  ['2','Certo: 5 e 19 são menores que 20. O 20 é igual e o 35 é maior.'],
+  ['3','20 < 20 é falso, então o 20 não entra.'],
+  ['4','35 e 20 não são menores que 20.']]}
+];
+let qi=0;
+function drawQ(){
+  const box=$('#quiz');
+  if(qi>=Q.length){
+    state.quiz.done=true;
+    const pct=Math.round(state.quiz.score/Q.length*100);
+    box.innerHTML=`<div class="card stack pop"><h3>Você acertou ${state.quiz.score} de ${Q.length}</h3><div class="big">${pct}%</div>
+      <p class="muted">${state.quiz.score===Q.length?'Perfeito! Agora leve isso para a sua casa.':'Quer melhorar? Volte ao laboratório ou ao jogo e depois refaça as questões.'}</p>
+      ${certHint()}<div class="row"><button class="btn alt" id="again">Refazer as questões</button><button class="btn" id="goCasa">Ir para o desafio em casa</button></div></div>`;
+    bindCert(box);
+    $('#again').addEventListener('click',()=>{qi=0;state.quiz.score=0;state.quiz.done=false;drawQ()});
+    $('#goCasa').addEventListener('click',()=>go(6));
+    return;
+  }
+  const q=Q[qi];
+  box.innerHTML=`<span class="progress-q">Questão ${qi+1} de ${Q.length}</span><div class="meter" aria-hidden="true"><i style="width:${qi/Q.length*100}%"></i></div><h3 class="slide">${q.t}</h3>`+
+    (q.rule?`<div class="q-rule">${q.rule}</div>`:'')+
+    q.o.map((o,i)=>`<button class="opt" data-i="${i}"><span class="top-line"><span class="letter">${'ABCD'[i]})</span><span>${o[0]}</span></span><span class="why" hidden>${o[1]}</span></button>`).join('')+
+    `<div class="how" id="how" hidden><b>Como resolver</b><ol>${q.how.map(h=>`<li>${h}</li>`).join('')}</ol></div>`+
+    `<button class="btn" id="qnext" hidden>${qi===Q.length-1?'Ver resultado':'Próxima questão'}</button>`;
+  $$('.opt',box).forEach(b=>b.addEventListener('click',()=>{
+    const i=+b.dataset.i; if(i===q.ok) state.quiz.score++;
+    $$('.opt',box).forEach((x,k)=>{x.disabled=true;x.classList.toggle('right',k===q.ok);x.classList.toggle('wrong',k===i&&i!==q.ok);$('.why',x).hidden=false;
+      $('.letter',x).textContent=(k===q.ok?'✔ ':(k===i?'✘ ':''))+'ABCD'[k]+')'});
+    $('#how').hidden=false;$('#qnext').hidden=false;
+  }));
+  $('#qnext').addEventListener('click',()=>{qi++;drawQ();window.scrollTo({top:0})});
+}
+drawQ();
+
+/* ---------- em casa ---------- */
+$('#fam').innerHTML=[1,2,3].map(n=>`<div class="fam" style="padding:${n>1?'12px 0 0':'0'};${n>1?'border-top:1px solid var(--line)':''}">
+  <h3>Aparelho ${n}</h3>
+  <div><label for="fa${n}">Qual aparelho?</label><input id="fa${n}" placeholder="ex.: portão automático"></div>
+  <div><label for="fs${n}">SE…</label><input id="fs${n}" placeholder="ex.: um carro chegar perto"></div>
+  <div><label for="fe${n}">ENTÃO…</label><input id="fe${n}" placeholder="ex.: o portão abre"></div>
+  <div><label for="fn${n}">SENÃO…</label><input id="fn${n}" placeholder="ex.: o portão fica fechado"></div></div>`).join('');
+$('#copiar').addEventListener('click',()=>{
+  const lines=[1,2,3].map(n=>{const g=id=>($('#'+id+n).value||'').trim();
+    return g('fa')||g('fs')||g('fe')||g('fn')?`Aparelho ${n}: ${g('fa')}\nSE ${g('fs')}\nENTÃO ${g('fe')}\nSENÃO ${g('fn')}`:''}).filter(Boolean);
+  const msg=$('#copiaMsg'); msg.hidden=false;
+  if(!lines.length){msg.className='msg warn';msg.textContent='Preencha pelo menos um aparelho antes de copiar.';return}
+  const text='Minhas regras SE… ENTÃO… SENÃO\n\n'+lines.join('\n\n');
+  const ok=()=>{msg.className='msg good';msg.textContent='Copiado! Agora cole numa conversa e mostre para a família ou para os amigos.'};
+  const bad=()=>{msg.className='msg warn';msg.textContent='Não consegui copiar. Selecione o texto e copie à mão.'};
+  const fallback=()=>{const t=document.createElement('textarea');t.value=text;t.style.position='fixed';t.style.opacity='0';document.body.appendChild(t);t.select();
+    try{document.execCommand('copy')?ok():bad()}catch(e){bad()}t.remove()};
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(text).then(ok,fallback)}else fallback();
+});
+
+const TODO=['Fiz as missões e as questões desta página.','Respondi as atividades e tarefas que estão abertas.','Conferi se não ficou nenhuma tarefa pendente.','Se tenho dúvida, vou falar com o professor antes do prazo.'];
+const saved=sget('ci-check')||[];
+$('#check').innerHTML=TODO.map((t,i)=>`<label><input type="checkbox" data-i="${i}" ${saved.includes(i)?'checked':''}><span>${t}</span></label>`).join('');
+function checkMsg(){
+  const n=$$('#check input:checked').length;
+  $('#checkMsg').textContent=n===TODO.length?'Tudo em dia. Continue assim!':`Você marcou ${n} de ${TODO.length}. Tarefa feita no prazo é nota garantida.`;
+}
+$$('#check input').forEach(c=>c.addEventListener('change',()=>{sset('ci-check',$$('#check input:checked').map(x=>+x.dataset.i));checkMsg()}));
+checkMsg();
+
+function drawTiles(){
+  const md=state.missions.filter(Boolean).length;
+  $('#tiles').innerHTML=
+   `<div class="tile"><div class="big">${md}/3</div><span>Missões</span></div>`+
+   `<div class="tile"><div class="big">${state.vf.done?state.vf.best+'/10':'–'}</div><span>Verdadeiro ou falso</span></div>`+
+   `<div class="tile"><div class="big">${state.quiz.done?state.quiz.score+'/5':'–'}</div><span>Questões</span></div>`;
+}
+
+/* ---------- certificado ---------- */
+const CD='"Bricolage Grotesque","Trebuchet MS",system-ui,sans-serif', CB='"Figtree","Segoe UI",system-ui,sans-serif';
+const CERT_MIN=0.6;
+function elig(){
+  const q=state.quiz,v=state.vf, total=q.total+10;
+  const both=q.done&&v.done;
+  const hits=(q.done?q.score:0)+(v.done?(v.best||0):0);
+  return {both,hits,total,pct:Math.round(hits/total*100),ok:both&&hits/total>=CERT_MIN,need:Math.ceil(CERT_MIN*total)};
+}
+function certHint(){
+  const e=elig();
+  if(e.ok) return `<div class="msg good pop">Você chegou a ${e.pct}%. Seu certificado está liberado!</div><button class="btn" data-cert>Ver meu certificado</button>`;
+  if(!e.both){const f=!state.quiz.done&&!state.vf.done?'o jogo e as questões':!state.vf.done?'o jogo Verdadeiro ou falso':'as questões';
+    return `<div class="msg info">Para liberar o certificado, termine ${f}. Ele pede 60% ou mais de acertos.</div>`}
+  return `<div class="msg info">Você está com ${e.pct}%. O certificado pede 60% (${e.need} de ${e.total} acertos). Refaça o jogo ou as questões.</div>`;
+}
+function bindCert(box){$$('[data-cert]',box).forEach(b=>b.addEventListener('click',()=>go(7)))}
+function wrapText(ctx,text,x,y,maxW,lh){
+  const words=text.split(' '),lines=[];let line='';
+  for(const w of words){const t=line?line+' '+w:w;if(ctx.measureText(t).width>maxW&&line){lines.push(line);line=w}else line=t}
+  lines.push(line);lines.forEach((l,i)=>ctx.fillText(l,x,y+i*lh));return lines.length;
+}
+async function renderCert(name,e){
+  try{await Promise.race([Promise.all([document.fonts.load('800 80px "Bricolage Grotesque"'),document.fonts.load('700 30px "Bricolage Grotesque"'),document.fonts.load('500 28px "Figtree"'),document.fonts.load('700 28px "Figtree"')]),new Promise(r=>setTimeout(r,2500))])}catch(x){}
+  const W=1600,H=1131,c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d');
+  const NAVY='#0E1F2B',TEAL='#0B7A6D',TINT='#DDF1EE',AMBER='#F2A20C',MUTED='#51656F';
+  const ls=v=>{if('letterSpacing' in g)g.letterSpacing=v};
+  if(!g.roundRect){g.roundRect=function(x,y,w,h,r){this.moveTo(x+r,y);this.arcTo(x+w,y,x+w,y+h,r);this.arcTo(x+w,y+h,x,y+h,r);this.arcTo(x,y+h,x,y,r);this.arcTo(x,y,x+w,y,r);this.closePath()}}
+  // fundo e grade
+  g.fillStyle='#FBFCFD';g.fillRect(0,0,W,H);
+  g.strokeStyle='rgba(14,31,43,.05)';g.lineWidth=1;
+  for(let x=0;x<=W;x+=40){g.beginPath();g.moveTo(x,0);g.lineTo(x,H);g.stroke()}
+  for(let y=0;y<=H;y+=40){g.beginPath();g.moveTo(0,y);g.lineTo(W,y);g.stroke()}
+  // moldura
+  g.strokeStyle=NAVY;g.lineWidth=10;g.strokeRect(28,28,W-56,H-56);
+  g.strokeStyle=TEAL;g.lineWidth=3;g.strokeRect(52,52,W-104,H-104);
+  // cabeçalho
+  g.fillStyle=NAVY;g.fillRect(28,28,W-56,140);
+  g.fillStyle=AMBER;g.fillRect(28,168,W-56,8);
+  g.textBaseline='alphabetic';g.textAlign='left';g.fillStyle='#fff';
+  g.font=`800 44px ${CD}`;ls('3px');g.fillText('E.E. MOACYR AMARAL',90,92);
+  g.font=`600 22px ${CB}`;g.fillStyle='#9BD9CF';ls('3px');g.fillText('ESCOLA DE ENSINO INTEGRAL (PEI)',90,132);
+  g.textAlign='right';g.fillStyle='#fff';g.font=`700 26px ${CB}`;ls('2px');g.fillText('ROBÓTICA · 1º ANO DO ENSINO MÉDIO',W-90,112);
+  ls('0px');
+  // título
+  g.textAlign='center';g.fillStyle=NAVY;ls('2px');
+  let tf=78;while(tf>40){g.font=`800 ${tf}px ${CD}`;if(g.measureText('CERTIFICADO DE APRENDIZAGEM').width<=1240)break;tf-=2}
+  g.fillText('CERTIFICADO DE APRENDIZAGEM',W/2,272);ls('0px');
+  g.fillStyle=AMBER;g.fillRect(W/2-90,294,180,8);
+  g.fillStyle=MUTED;g.font=`500 30px ${CB}`;g.fillText('Certificamos que',W/2,352);
+  // nome
+  let fs=100;while(fs>36){g.font=`800 ${fs}px ${CD}`;if(g.measureText(name).width<=960)break;fs-=2}
+  g.fillStyle=NAVY;g.fillText(name,W/2,450);
+  const nw=g.measureText(name).width;g.fillStyle=TEAL;g.fillRect(W/2-nw/2-30,472,nw+60,5);
+  // texto
+  g.fillStyle=NAVY;g.font=`500 30px ${CB}`;
+  const nl=wrapText(g,`concluiu a trilha “Casa Inteligente” de Robótica, sobre decisões SE… ENTÃO… SENÃO no micro:bit, com aproveitamento de ${e.pct}%.`,W/2,528,1140,42);
+  // selo
+  const sx=1415,sy=395;g.save();g.translate(sx,sy);g.fillStyle=AMBER;g.beginPath();
+  for(let i=0;i<48;i++){const r=i%2?70:82,a=i*Math.PI/24;g.lineTo(Math.cos(a)*r,Math.sin(a)*r)}g.closePath();g.fill();
+  g.fillStyle=NAVY;g.beginPath();g.arc(0,0,60,0,Math.PI*2);g.fill();
+  g.fillStyle='#fff';g.textAlign='center';let pf=44;while(pf>24){g.font=`800 ${pf}px ${CD}`;if(g.measureText(e.pct+'%').width<=96)break;pf-=2}
+  g.fillText(e.pct+'%',0,10);
+  g.font=`700 12px ${CB}`;ls('1px');g.fillStyle='#9BD9CF';g.fillText('DE ACERTOS',0,34);ls('0px');g.restore();
+  // casinha
+  g.save();g.translate(0,92);g.strokeStyle=TEAL;g.lineWidth=8;g.lineJoin='round';g.lineCap='round';
+  g.beginPath();g.moveTo(150,372);g.lineTo(150,318);g.lineTo(210,270);g.lineTo(270,318);g.lineTo(270,372);g.closePath();g.stroke();
+  const gl=g.createRadialGradient(210,334,2,210,334,46);gl.addColorStop(0,'rgba(242,162,12,.55)');gl.addColorStop(1,'rgba(242,162,12,0)');
+  g.fillStyle=gl;g.fillRect(150,290,120,90);g.fillStyle=AMBER;g.beginPath();g.arc(210,336,13,0,Math.PI*2);g.fill();g.restore();
+  // chips
+  const m=state.missions.filter(Boolean).length;
+  const chips=[`Acertos: ${e.hits} de ${e.total}`,`Missões: ${m} de 3`];
+  g.font=`700 26px ${CB}`;g.textAlign='center';
+  const ws=chips.map(t=>g.measureText(t).width+64),gap=28,tot=ws.reduce((a,b)=>a+b,0)+gap*(chips.length-1);
+  let cx=W/2-tot/2;
+  const cy=528+(nl-1)*42+44;
+  chips.forEach((t,i)=>{g.fillStyle=TINT;g.strokeStyle=TEAL;g.lineWidth=3;g.beginPath();g.roundRect(cx,cy,ws[i],50,25);g.fill();g.stroke();g.fillStyle=NAVY;g.fillText(t,cx+ws[i]/2,cy+34);cx+=ws[i]+gap});
+  // o que aprendi
+  const hy=cy+96;g.textAlign='left';g.fillStyle=TEAL;g.font=`800 24px ${CB}`;ls('4px');g.fillText('O QUE EU APRENDI',100,hy);ls('0px');
+  const items=['Decisões SE… ENTÃO… SENÃO','Sensores e valores: luz, temperatura e botão','Comparações com <, > e =','Verdadeiro e falso: o que é uma condição','Como o micro:bit transforma regras em ações'];
+  g.font=`500 27px ${CB}`;
+  items.forEach((t,i)=>{const col=i<3?0:1,row=i<3?i:i-3,x=col?840:100,y=hy+50+row*42;
+    g.fillStyle=AMBER;g.fillRect(x,y-20,14,14);g.fillStyle=NAVY;g.fillText(t,x+30,y)});
+  // mensagem
+  const by=hy+50+2*42+26;
+  g.fillStyle=TINT;g.beginPath();g.roundRect(100,by,1400,100,16);g.fill();
+  g.fillStyle=NAVY;g.textAlign='center';g.font=`italic 700 28px ${CB}`;
+  wrapText(g,'“Você aprendeu a pensar como quem programa: olhar o que acontece, comparar e decidir. Continue curioso! Quem entende lógica pode construir robôs, jogos e aplicativos.”',W/2,by+42,1280,38);
+  // rodapé
+  const fy=992;
+  g.strokeStyle=NAVY;g.lineWidth=2;g.beginPath();g.moveTo(100,fy);g.lineTo(660,fy);g.moveTo(1190,fy);g.lineTo(1500,fy);g.stroke();
+  g.textAlign='left';g.fillStyle=NAVY;g.font=`800 28px ${CD}`;g.fillText('Thiago Fernando',100,fy+32);
+  g.fillStyle=MUTED;g.font=`500 20px ${CB}`;g.fillText('Licenciado em Matemática',100,fy+56);g.fillText('Graduando em Engenharia da Computação',100,fy+78);
+  g.textAlign='right';g.fillStyle=NAVY;g.font=`800 25px ${CD}`;g.fillText(new Date().toLocaleDateString('pt-BR',{day:'numeric',month:'long',year:'numeric'}),1500,fy+30);
+  g.fillStyle=MUTED;g.font=`500 21px ${CB}`;g.fillText('Data',1500,fy+56);
+  g.textAlign='center';g.fillStyle=TEAL;g.font=`700 22px ${CB}`;
+  wrapText(g,'Compartilhe este certificado com seus amigos e sua família!',925,fy+14,440,30);
+  return c.toDataURL('image/png');
+}
+function drawCert(){
+  const e=elig(),q=state.quiz,v=state.vf;
+  const row=(ok,t)=>`<li class="${ok?'ok':''}"><span class="mk">${ok?'✔':'○'}</span><span>${t}</span></li>`;
+  let btns='';
+  if(!v.done) btns+='<button class="btn alt" data-goto="3">Ir para o jogo</button>';
+  if(!q.done) btns+='<button class="btn alt" data-goto="5">Ir para as questões</button>';
+  if(e.both&&!e.ok) btns+='<button class="btn alt" data-goto="3">Refazer o jogo</button><button class="btn alt" data-goto="5">Refazer as questões</button>';
+  $('#certStatus').innerHTML=`<h3>Como liberar</h3><ul class="req">`+
+    row(v.done,'Jogar as 10 rodadas do Verdadeiro ou falso'+(v.done?` (${v.best} de 10)`:''))+
+    row(q.done,'Responder as 5 questões'+(q.done?` (${q.score} de ${q.total})`:''))+
+    row(e.ok,`Chegar a 60% ou mais de acertos (${e.need} de ${e.total})`+(e.both?`. Você está com ${e.pct}%`:''))+`</ul>`+
+    (e.ok?'<div class="msg good pop">Certificado liberado! Parabéns!</div>':'')+(btns?`<div class="row">${btns}</div>`:'');
+  $$('#certStatus [data-goto]').forEach(b=>b.addEventListener('click',()=>go(+b.dataset.goto)));
+  $('#certForm').hidden=!e.ok;
+  if(!e.ok) $('#certOut').hidden=true;
+}
+$('#certGo').addEventListener('click',async()=>{
+  const name=($('#certName').value||'').trim().replace(/\s+/g,' '), err=$('#certErr'), e=elig();
+  if(!e.ok) return;
+  if(name.length<5||!name.includes(' ')){err.hidden=false;err.textContent='Escreva seu nome completo, com nome e sobrenome.';return}
+  err.hidden=true;
+  const btn=$('#certGo');btn.disabled=true;btn.textContent='Gerando…';
+  try{
+    $('#certImg').src=await renderCert(name,e);
+    $('#certImg').alt='Certificado de aprendizagem de '+name;
+    $('#certOut').hidden=false;
+    setTimeout(()=>$('#certOut').scrollIntoView({behavior:'smooth',block:'start'}),60);
+  }catch(x){err.hidden=false;err.textContent='Não consegui gerar o certificado. Tire um print da tela com seus resultados e fale com o professor.'}
+  btn.disabled=false;btn.textContent='Gerar meu certificado';
+});
+$('#certShare').addEventListener('click',()=>{
+  const text='Ganhei meu certificado de aprendizagem de Robótica na E.E. Moacyr Amaral! Aprendi a escrever decisões SE… ENTÃO… SENÃO com sensores e micro:bit. Quer aprender também?';
+  const msg=$('#certShareMsg'); msg.hidden=false;
+  const ok=()=>{msg.className='msg good cert-hide';msg.textContent='Mensagem copiada! Cole numa conversa e envie junto com a imagem do certificado.'};
+  const bad=()=>{msg.className='msg warn cert-hide';msg.textContent='Não consegui copiar. Escreva você mesmo uma mensagem para mandar com o certificado.'};
+  const fb=()=>{const t=document.createElement('textarea');t.value=text;t.style.position='fixed';t.style.opacity='0';document.body.appendChild(t);t.select();try{document.execCommand('copy')?ok():bad()}catch(x){bad()}t.remove()};
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(text).then(ok,fb)}else fb();
+});
+
+/* ---------- trilha e navegação ---------- */
+const screens=$$('.screen'), stepsEl=$('#steps');
+const TRAIL=[['Entenda','Veja a decisão acontecer'],['Laboratório','Mexa nos sensores'],['Jogo','Verdadeiro ou falso'],['Missões','Monte a regra certa'],['Questões','Teste o que aprendeu'],['Em casa','Desafio e lista de hoje'],['Certificado','Ganhe o seu com 60% ou mais']];
+$('#trail').innerHTML=TRAIL.map((t,i)=>`<button class="stop" data-go="${i+1}"><span class="n">${i+1}</span><span class="t"><b>${t[0]}</b><small>${t[1]}</small></span></button>`).join('');
+$$('#trail .stop').forEach(b=>b.addEventListener('click',()=>go(+b.dataset.go)));
+screens.forEach((s,i)=>{const b=document.createElement('button');b.setAttribute('role','tab');b.setAttribute('aria-label',`${i+1}. ${s.dataset.title}`);b.addEventListener('click',()=>go(i));stepsEl.appendChild(b)});
+let cur=0;
+function go(i){
+  cur=Math.max(0,Math.min(screens.length-1,i));
+  screens.forEach((s,k)=>s.hidden=k!==cur);
+  $$('button',stepsEl).forEach((b,k)=>{b.className=k<cur?'done':k===cur?'now':'';b.setAttribute('aria-selected',k===cur)});
+  $('#pos').textContent=`${cur+1}/${screens.length}`;
+  $('#where').textContent=screens[cur].dataset.title;
+  $('#prev').disabled=cur===0;
+  const last=cur===screens.length-1;
+  $('#next').disabled=last; $('#next').textContent=last?'Fim':'Próximo';
+  drawTiles(); drawCert();
+  window.scrollTo({top:0});
+}
+$('#prev').addEventListener('click',()=>go(cur-1));
+$('#next').addEventListener('click',()=>go(cur+1));
+$('#ribbon').addEventListener('click',()=>{go(0);setTimeout(()=>{const a=$('#aviso');a.scrollIntoView({behavior:'smooth',block:'center'});a.focus({preventScroll:true})},50)});
+go(0);
+})();
+</script>
+
+</body>
+</html>
